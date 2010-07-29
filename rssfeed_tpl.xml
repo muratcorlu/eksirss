@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="0.92">
+<channel>
+	<title>Baslik</title>
+	<link>URL</link>
+	<description>Desc</description>
+	<lastBuildDate>Tue, 15 Sep 2009 06:25:02 +0000</lastBuildDate>
+	<language>tr</language>
+	<item>
+		<title>Baslik</title>
+		<description>Aciklama</description>
+		<link>Link</link>
+	</item>
+</channel>
+</rss>
