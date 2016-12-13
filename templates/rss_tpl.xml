@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+    <title>{{ meta.title }} - EkşiSözlük</title>
+    <link>{{ meta.url }}</link>
+    <description>EkşiSözlük'te {{ meta.title }} hakkında yazılanlar RSS kaynağı</description>
+    <lastBuildDate>{{ dates[0] }}</lastBuildDate>
+    <language>tr</language>
+
+    {% for entry in entries %}
+    <item>
+        <guid isPermaLink="false">https://www.eksisozluk.com{{ links[loop.index0] }}</guid>
+        <pubDate>{{ dates[loop.index0] }}</pubDate>
+        <title>{{ authors[loop.index0] }} - {{ meta.title }}</title>
+        <author>{{ authors[loop.index0] }}</author>
+        <description><div xmlns="http://www.w3.org/1999/xhtml">{{ entry | safe }}</div></description>
+        <link>https://www.eksisozluk.com{{ links[loop.index0] }}</link>
+    </item>
+    {% endfor %}
+</channel>
+</rss>
