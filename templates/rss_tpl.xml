@@ -6,6 +6,7 @@
     <description>EkşiSözlük'te {{ meta.title }} hakkında yazılanlar RSS kaynağı</description>
     <lastBuildDate>{{ dates[0] }}</lastBuildDate>
     <language>tr</language>
+    <ttl>15</ttl>
 
     {% for entry in entries %}
     <item>
