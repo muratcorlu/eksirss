@@ -1,7 +1,7 @@
 # encoding: utf-8
 import logging
 
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, redirect
 import requests
 import requests_toolbelt.adapters.appengine
 from lxml import html, etree
@@ -13,6 +13,17 @@ app = Flask(__name__)
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 cache = Client()
+
+from urlparse import urlparse, urlunparse
+
+@app.before_request
+def redirect_nonwww():
+    """Redirect non-www requests to www."""
+    urlparts = urlparse(request.url)
+    if urlparts.netloc == 'eksirss.appspot.com':
+        urlparts_list = list(urlparts)
+        urlparts_list[1] = 'eksirss.muratcorlu.com'
+        return redirect(urlunparse(urlparts_list), code=301)
 
 @app.route('/')
 def main():
@@ -43,6 +54,9 @@ def feed():
                 params = {
                     'p': last_page_number
                 }
+                import time
+                time.sleep(1)
+
                 page = requests.get(page.url, params=params, headers=headers)
 
                 tree = html.fromstring(page.content)
@@ -59,7 +73,7 @@ def feed():
         dates = [datetime.strptime(date.split(' ~ ')[0], "%d.%m.%Y %H:%M") for date in tree.xpath('//*[@class="entry-date permalink"]/text()')][::-1]
 
         rss_response = render_template('rss_tpl.xml', entries=entries, links=links, authors=authors, dates=dates, meta=meta)
-        cache.set(cache_key, rss_response, time=15*60)
+        cache.set(cache_key, rss_response, time=120*60)
     else:
         rss_response = cache.get(cache_key)
 
