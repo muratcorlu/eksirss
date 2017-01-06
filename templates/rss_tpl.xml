@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 <channel>
-    <title>{{ meta.title }} - EkşiSözlük</title>
-    <link>{{ meta.url }}</link>
-    <description>EkşiSözlük'te {{ meta.title }} hakkında yazılanlar RSS kaynağı</description>
-    <lastBuildDate>{{ dates[0] }}</lastBuildDate>
+    <title>{{ feed.title }} - EkşiSözlük</title>
+    <link>{{ request.url }}</link>
+    <description>EkşiSözlük'te {{ feed.title }} hakkında yazılanlar RSS kaynağı</description>
+    <lastBuildDate>{{ feed.content.dates[0] }}</lastBuildDate>
     <language>tr</language>
     <ttl>15</ttl>
 
-    {% for entry in entries %}
+    {% for entry in feed.content.entries %}
     <item>
-        <guid isPermaLink="false">https://www.eksisozluk.com{{ links[loop.index0] }}</guid>
-        <pubDate>{{ dates[loop.index0] }}</pubDate>
-        <title>{{ authors[loop.index0] }} - {{ meta.title }}</title>
-        <author>{{ authors[loop.index0] }}</author>
+        <guid isPermaLink="false">https://www.eksisozluk.com{{ feed.content.links[loop.index0] }}</guid>
+        <pubDate>{{ feed.content.dates[loop.index0] }}</pubDate>
+        <title>{{ feed.content.authors[loop.index0] }} - {{ feed.title }}</title>
+        <author>{{ feed.content.authors[loop.index0] }}</author>
         <description><div xmlns="http://www.w3.org/1999/xhtml">{{ entry | safe }}</div></description>
-        <link>https://www.eksisozluk.com{{ links[loop.index0] }}</link>
+        <link>https://www.eksisozluk.com{{ feed.content.links[loop.index0] }}</link>
     </item>
     {% endfor %}
 </channel>

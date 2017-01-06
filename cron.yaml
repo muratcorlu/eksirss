@@ -1,0 +1,8 @@
+cron:
+- description: fill cache
+  url: /tasks/fill-cache
+  schedule: every 1 minutes
+
+- description: delete topics not accessed in 24 hours
+  url: /tasks/clear-db
+  schedule: every 24 hours
