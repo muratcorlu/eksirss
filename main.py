@@ -17,7 +17,7 @@ requests_toolbelt.adapters.appengine.monkeypatch()
 
 # 2 hours
 CACHE_TIMEOUT = 2 * 60 * 60
-TOPIC_PER_MINUTE = 2
+TOPIC_PER_MINUTE = 1
 
 app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'gaememcached'
