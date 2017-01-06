@@ -153,7 +153,10 @@ def get_feed():
     keyword = request.args.get('t')
     logging.info('cache not found for %s', keyword)
 
-    feed = fetch_feed(keyword)
+    # try loading from data store first
+    feed = feed_key(keyword).get()
+    if not feed:
+        feed = fetch_feed(keyword)
     return render_feed(feed)
 
 
