@@ -111,6 +111,7 @@ def create_feed_from_page(keyword, url, tree):
         'dates': [d.strftime("%a, %d %b %Y %H:%M:%S") for d in dates]
     }
     topic_feed.last_update = datetime.now()
+    topic_feed.last_hit = datetime.now()
     return topic_feed
 
 
