@@ -119,7 +119,7 @@ def main():
     return render_template('main.html')
 
 
-@app.route('/tasks/fill-cache')
+@app.route('/tasks/fill-cache/')
 def fill_cache():
     for feed in Feed.query().order(Feed.last_update).fetch(limit=TOPIC_PER_MINUTE):
         feed = fetch_feed(feed.keyword)
@@ -131,7 +131,7 @@ def fill_cache():
     return "ok"
 
 
-@app.route('/tasks/clear-db')
+@app.route('/tasks/clear-db/')
 def clear_db():
     one_day_ago = datetime.now() - timedelta(days=1)
 
