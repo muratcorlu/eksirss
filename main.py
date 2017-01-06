@@ -64,13 +64,16 @@ def render_feed(feed):
     }
 
 
-def fetch_feed(keyword):
+def fetch_feed(keyword, url_with_paging=None):
     with requests.Session() as s:
         s.headers.update({
             'User-Agent': generate_user_agent()
         })
 
-        page = s.get('https://eksisozluk.com/', params={'q': keyword})
+        if url_with_paging:
+            page = s.get(url_with_paging)
+        else:
+            page = s.get('https://eksisozluk.com/', params={'q': keyword})
 
         tree = html.fromstring(page.content)
         url = page.url
@@ -123,7 +126,7 @@ def main():
 @app.route('/tasks/fill-cache')
 def fill_cache():
     for feed in Feed.query().order(Feed.last_update).fetch(limit=TOPIC_PER_MINUTE):
-        feed = fetch_feed(feed.keyword)
+        feed = fetch_feed(feed.keyword, feed.url)
         response = render_feed(feed)
 
         logging.info('filling cache for %s', feed.keyword)
