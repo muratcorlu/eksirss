@@ -162,7 +162,7 @@ def get_feed():
 
 @app.before_request
 def redirect_nonwww():
-    if request.endpoint.startswith('/tasks/'):
+    if request.path.startswith('/tasks/'):
         return
 
     """Redirect non-www requests to www."""
