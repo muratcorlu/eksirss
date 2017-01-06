@@ -6,11 +6,7 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /tasks/fill-cache
-  script: main.app
-  login: admin
-
-- url: /tasks/clear-db
+- url: /tasks/.*
   script: main.app
   login: admin
 
