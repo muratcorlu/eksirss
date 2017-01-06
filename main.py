@@ -162,6 +162,9 @@ def get_feed():
 
 @app.before_request
 def redirect_nonwww():
+    if request.endpoint.startswith('/tasks/'):
+        return
+
     """Redirect non-www requests to www."""
     urlparts = urlparse(request.url)
     if urlparts.netloc == 'eksirss.appspot.com':
