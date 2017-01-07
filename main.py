@@ -64,7 +64,7 @@ def render_feed(feed):
     }
 
 
-def fetch_feed(keyword, url_with_paging=None):
+def fetch_feed(keyword, url_with_paging=None, last_hit=None):
     with requests.Session() as s:
         s.headers.update({
             'User-Agent': generate_user_agent()
@@ -89,13 +89,13 @@ def fetch_feed(keyword, url_with_paging=None):
                 tree = html.fromstring(page.content)
                 url = page.url
 
-    feed = create_feed_from_page(keyword, url, tree)
+    feed = create_feed_from_page(tree, keyword, url, last_hit=last_hit)
     feed.put()
 
     return feed
 
 
-def create_feed_from_page(keyword, url, tree):
+def create_feed_from_page(tree, keyword, url, last_hit=None):
     topic_feed = Feed()
     topic_feed.key = feed_key(keyword)
     topic_feed.title = tree.xpath('//*[@id="title"]/a/span/text()')[0]
@@ -114,7 +114,7 @@ def create_feed_from_page(keyword, url, tree):
         'dates': [d.strftime("%a, %d %b %Y %H:%M:%S") for d in dates]
     }
     topic_feed.last_update = datetime.now()
-    topic_feed.last_hit = datetime.now()
+    topic_feed.last_hit = last_hit if last_hit else datetime.now()
     return topic_feed
 
 
@@ -126,7 +126,7 @@ def main():
 @app.route('/tasks/fill-cache')
 def fill_cache():
     for feed in Feed.query().order(Feed.last_update).fetch(limit=TOPIC_PER_MINUTE):
-        feed = fetch_feed(feed.keyword, feed.url)
+        feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
         response = render_feed(feed)
 
         logging.info('filling cache for %s', feed.keyword)
