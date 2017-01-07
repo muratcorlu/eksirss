@@ -15,8 +15,8 @@ from werkzeug.http import http_date
 import requests_toolbelt.adapters.appengine
 requests_toolbelt.adapters.appengine.monkeypatch()
 
-# 2 hours
-CACHE_TIMEOUT = 2 * 60 * 60
+# 12 hours
+CACHE_TIMEOUT = 12 * 60 * 60
 TOPIC_PER_MINUTE = 1
 
 app = Flask(__name__)
