@@ -1,0 +1,3 @@
+queue:
+- name: feed-queue
+  rate: 10/s

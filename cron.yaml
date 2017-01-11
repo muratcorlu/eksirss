@@ -1,7 +1,7 @@
 cron:
 - description: fill cache
   url: /tasks/fill-cache
-  schedule: every 1 minutes
+  schedule: 1 of jan 00:00
 
 - description: delete topics not accessed in 24 hours
   url: /tasks/clear-db

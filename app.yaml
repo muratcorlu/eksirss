@@ -6,6 +6,10 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /_ah/queue/deferred
+  script: google.appengine.ext.deferred.deferred.application
+  login: admin
+
 - url: /tasks/.*
   script: main.app
   login: admin
@@ -27,3 +31,6 @@ skip_files:
 - ^(.*/)?.*/RCS/.*$
 - ^(.*/)?\..*$
 - ^venv$
+
+builtins:
+- deferred: on

@@ -5,7 +5,10 @@ import requests
 from datetime import datetime
 from datetime import timedelta
 from urlparse import urlparse, urlunparse
+
+from google.appengine.ext.deferred import deferred
 from google.appengine.ext import ndb
+
 from flask import Flask, render_template, request, redirect
 from flask_caching import Cache
 from lxml import html, etree
@@ -17,7 +20,6 @@ requests_toolbelt.adapters.appengine.monkeypatch()
 
 # 12 hours
 CACHE_TIMEOUT = 12 * 60 * 60
-TOPIC_PER_MINUTE = 1
 
 app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'gaememcached'
@@ -118,6 +120,23 @@ def create_feed_from_page(tree, keyword, url, last_hit=None):
     return topic_feed
 
 
+def fill_cache_for_key(key):
+    feed = key.get()
+
+    feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
+    response = render_feed(feed)
+
+    logging.info('filling cache for %s', feed.keyword)
+    cache.set(cache_key(feed.keyword), response, timeout=CACHE_TIMEOUT)
+
+    # schedule again
+    add_feed_to_task_queue(key)
+
+
+def add_feed_to_task_queue(key):
+    deferred.defer(fill_cache_for_key, key, _queue="feed-queue")
+
+
 @app.route('/')
 def main():
     return render_template('main.html')
@@ -125,12 +144,8 @@ def main():
 
 @app.route('/tasks/fill-cache')
 def fill_cache():
-    for feed in Feed.query().order(Feed.last_update).fetch(limit=TOPIC_PER_MINUTE):
-        feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
-        response = render_feed(feed)
-
-        logging.info('filling cache for %s', feed.keyword)
-        cache.set(cache_key(feed.keyword), response, timeout=CACHE_TIMEOUT)
+    for key in Feed.query().order(Feed.last_update).iter(keys_only=True):
+        add_feed_to_task_queue(key)
 
     return "ok"
 
@@ -161,6 +176,8 @@ def get_feed():
     feed = feed_key(keyword).get()
     if not feed:
         feed = fetch_feed(keyword)
+        # first time
+        add_feed_to_task_queue(feed.key)
     return render_feed(feed)
 
 
