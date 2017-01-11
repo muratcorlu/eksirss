@@ -2,7 +2,7 @@
 <rss version="2.0">
 <channel>
     <title>{{ feed.title }} - EkşiSözlük</title>
-    <link>{{ request.url }}</link>
+    <link>http://eksirss.muratcorlu.com/feed/?t={{ feed.keyword | urlencode }}</link>
     <description>EkşiSözlük'te {{ feed.title }} hakkında yazılanlar RSS kaynağı</description>
     <lastBuildDate>{{ feed.content.dates[0] }}</lastBuildDate>
     <language>tr</language>

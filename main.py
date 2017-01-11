@@ -121,16 +121,17 @@ def create_feed_from_page(tree, keyword, url, last_hit=None):
 
 
 def fill_cache_for_key(key):
-    feed = key.get()
+    with app.app_context():
+        feed = key.get()
 
-    feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
-    response = render_feed(feed)
+        feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
+        response = render_feed(feed)
 
-    logging.info('filling cache for %s', feed.keyword)
-    cache.set(cache_key(feed.keyword), response, timeout=CACHE_TIMEOUT)
+        logging.info('filling cache for %s', feed.keyword)
+        cache.set(cache_key(feed.keyword), response, timeout=CACHE_TIMEOUT)
 
-    # schedule again
-    add_feed_to_task_queue(key)
+        # schedule again
+        add_feed_to_task_queue(key)
 
 
 def add_feed_to_task_queue(key):
