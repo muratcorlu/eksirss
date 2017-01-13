@@ -121,8 +121,11 @@ def create_feed_from_page(tree, keyword, url, last_hit=None):
 
 
 def fill_cache_for_key(key):
+    feed = key.get()
+    if not feed:
+        return
+
     with app.app_context():
-        feed = key.get()
 
         feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
         response = render_feed(feed)
