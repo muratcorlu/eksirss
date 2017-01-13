@@ -16,6 +16,10 @@ from user_agent import generate_user_agent
 from werkzeug.http import http_date
 
 import requests_toolbelt.adapters.appengine
+
+REQUEST_READ_TIMEOUT = 10
+REQUEST_CONNECT_TIMEOUT = 3.05
+
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 # 12 hours
@@ -72,10 +76,12 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
             'User-Agent': generate_user_agent()
         })
 
+        timeout = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
+
         if url_with_paging:
-            page = s.get(url_with_paging)
+            page = s.get(url_with_paging, timeout=timeout)
         else:
-            page = s.get('https://eksisozluk.com/', params={'q': keyword})
+            page = s.get('https://eksisozluk.com/', params={'q': keyword}, timeout=timeout)
 
         tree = html.fromstring(page.content)
         url = page.url
@@ -87,7 +93,7 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
             current_page_number = tree.xpath('//*[@class="pager"]/@data-currentpage')[0]
 
             if last_page_number > current_page_number:
-                page = s.get(page.url, params={'p': last_page_number})
+                page = s.get(page.url, params={'p': last_page_number}, timeout=timeout)
                 tree = html.fromstring(page.content)
                 url = page.url
 
@@ -126,7 +132,6 @@ def fill_cache_for_key(key):
         return
 
     with app.app_context():
-
         feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
         response = render_feed(feed)
 
