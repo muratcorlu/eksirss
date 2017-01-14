@@ -9,17 +9,18 @@ from urlparse import urlparse, urlunparse
 from google.appengine.ext.deferred import deferred
 from google.appengine.ext import ndb
 
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect
 from flask_caching import Cache
 from lxml import html, etree
 from user_agent import generate_user_agent
 from werkzeug.http import http_date
 
 import requests_toolbelt.adapters.appengine
-requests_toolbelt.adapters.appengine.monkeypatch()
 
 REQUEST_READ_TIMEOUT = 10
 REQUEST_CONNECT_TIMEOUT = 3.05
+
+requests_toolbelt.adapters.appengine.monkeypatch()
 
 # 12 hours
 CACHE_TIMEOUT = 12 * 60 * 60
@@ -82,9 +83,6 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
         else:
             page = s.get('https://eksisozluk.com/', params={'q': keyword}, timeout=timeout)
 
-        if page.status_code == 404:
-            return None
-
         tree = html.fromstring(page.content)
         url = page.url
 
@@ -135,9 +133,6 @@ def fill_cache_for_key(key):
 
     with app.app_context():
         feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
-        if not feed:
-            return
-
         response = render_feed(feed)
 
         logging.info('filling cache for %s', feed.keyword)
@@ -190,12 +185,8 @@ def get_feed():
     feed = feed_key(keyword).get()
     if not feed:
         feed = fetch_feed(keyword)
-
-    if not feed:
-        return u'Başlık bulunamadı.', 404
-
-    # first time
-    add_feed_to_task_queue(feed.key)
+        # first time
+        add_feed_to_task_queue(feed.key)
     return render_feed(feed)
 
 
