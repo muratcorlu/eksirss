@@ -24,6 +24,9 @@ requests_toolbelt.adapters.appengine.monkeypatch()
 # 12 hours
 CACHE_TIMEOUT = 12 * 60 * 60
 
+# 1 hours
+CDN_CACHE_TIMEOUT = 60 * 60
+
 app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'gaememcached'
 app.config['CACHE_KEY_PREFIX'] = ''
@@ -64,8 +67,8 @@ def render_feed(feed):
     return response, 200, {
         'Content-Type': 'application/rss+xml',
         'Last-Modified': http_date(feed.last_update),
-        # 'Cache-Control': 'public, max-age=%d' % CACHE_TIMEOUT,
-        # 'Expires': http_date(feed.last_update + timedelta(seconds=CACHE_TIMEOUT))
+        # 'Cache-Control': 'public, max-age=%d' % CDN_CACHE_TIMEOUT,
+        'Expires': http_date(feed.last_update + timedelta(seconds=CDN_CACHE_TIMEOUT))
     }
 
 
