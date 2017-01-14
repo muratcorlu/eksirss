@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import timedelta
 from urlparse import urlparse, urlunparse
 
+from google.appengine.api import urlfetch
 from google.appengine.ext.deferred import deferred
 from google.appengine.ext import ndb
 
@@ -17,9 +18,7 @@ from werkzeug.http import http_date
 
 import requests_toolbelt.adapters.appengine
 
-REQUEST_READ_TIMEOUT = 10
-REQUEST_CONNECT_TIMEOUT = 3.05
-
+HTTP_REQUEST_TIMEOUT = 10
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 # 12 hours
@@ -76,12 +75,10 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
             'User-Agent': generate_user_agent()
         })
 
-        timeout = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
-
         if url_with_paging:
-            page = s.get(url_with_paging, timeout=timeout)
+            page = s.get(url_with_paging)
         else:
-            page = s.get('https://eksisozluk.com/', params={'q': keyword}, timeout=timeout)
+            page = s.get('https://eksisozluk.com/', params={'q': keyword})
 
         tree = html.fromstring(page.content)
         url = page.url
@@ -93,7 +90,7 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
             current_page_number = tree.xpath('//*[@class="pager"]/@data-currentpage')[0]
 
             if last_page_number > current_page_number:
-                page = s.get(page.url, params={'p': last_page_number}, timeout=timeout)
+                page = s.get(page.url, params={'p': last_page_number})
                 tree = html.fromstring(page.content)
                 url = page.url
 
@@ -192,6 +189,7 @@ def get_feed():
 
 @app.before_request
 def redirect_nonwww():
+    urlfetch.set_default_fetch_deadline(HTTP_REQUEST_TIMEOUT)
     if request.path.startswith('/tasks/'):
         return
 
