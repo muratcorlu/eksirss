@@ -11,9 +11,11 @@ handlers:
   login: admin
 
 - url: /static/(.*\.svg)
-  mime_type: images/svg+xml
   static_files: static/\1
   upload: static/(.*\.svg)
+  mime_type: images/svg+xml
+  http_headers:
+    Content-Type: images/svg+xml
 
 - url: /tasks/.*
   script: main.app
