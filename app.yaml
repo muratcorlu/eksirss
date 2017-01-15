@@ -13,7 +13,6 @@ handlers:
 - url: /static/(.*\.svg)
   static_files: static/\1
   upload: static/(.*\.svg)
-  mime_type: images/svg+xml
   http_headers:
     Content-Type: images/svg+xml
 
