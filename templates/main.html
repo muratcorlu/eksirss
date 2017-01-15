@@ -14,10 +14,14 @@
         p.desc {font-size:.8em;}
         form {
             margin:25px auto;
+            display: -ms-flexbox;  /* TWEENER - IE 10 */
+            display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
             display: flex;
             max-width: 400px;
         }
         form input {
+            -webkit-flex: 4;
+            -ms-flex: 4;
             flex: 4;
             font-size: 16px;
             padding: 10px;
@@ -26,6 +30,8 @@
             border-right: none;
         }
         form button {
+            -webkit-flex: 1;
+            -ms-flex: 1;
             flex: 1;
             border: solid 1px #ccc;
             border-radius: 0 4px 4px 0;
@@ -87,21 +93,23 @@
     </div>
 
     <script>
-        var $ = function (q) {
-            return document.querySelector(q);
-        };
+        (function () {}
+            var $ = function (q) {
+                return document.querySelector(q);
+            };
 
-        $('form').addEventListener('submit', function (event) {
-            event.preventDefault();
+            $('form').addEventListener('submit', function (event) {
+                event.preventDefault();
 
-            var title = $('form input[name=t]').value;
+                var title = $('form input[name=t]').value;
 
-            var link = $('.rss-link a');
-            link.setAttribute('href', '/feed/?t=' + encodeURI(title))
-            link.innerText = title + ' EkşiSözlük RSS Kaynağı';
+                var link = $('.rss-link a');
+                link.setAttribute('href', '/feed/?t=' + encodeURI(title))
+                link.innerText = title + ' EkşiSözlük RSS Kaynağı';
 
-            $('body').classList.add('open');
-        });
+                $('body').classList.add('open');
+            });
+        })();
     </script>
 </body>
 </html>
