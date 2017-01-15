@@ -10,6 +10,9 @@ handlers:
   script: google.appengine.ext.deferred.deferred.application
   login: admin
 
+- url: /static
+  static_dir: static
+
 - url: /tasks/.*
   script: main.app
   login: admin
