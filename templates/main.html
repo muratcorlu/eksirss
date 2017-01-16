@@ -62,7 +62,8 @@
             font-size: 16px;
             padding-left: 15px;
             text-align: left;
-            display: block;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .rss-link a:before {
@@ -77,6 +78,26 @@
             background-size: cover;
         }
 
+        .copy-to-clipboard {
+            border: none;
+            background-color: transparent;
+            width: 32px;
+            height: 32px;
+            overflow: hidden;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+        .copy-to-clipboard:before {
+            content: '';
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-image: url(data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjEwMjQiIHdpZHRoPSI4OTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+ICA8cGF0aCBkPSJNMTI4IDc2OGgyNTZ2NjRIMTI4di02NHogbTMyMC0zODRIMTI4djY0aDMyMHYtNjR6IG0xMjggMTkyVjQ0OEwzODQgNjQwbDE5MiAxOTJWNzA0aDMyMFY1NzZINTc2eiBtLTI4OC02NEgxMjh2NjRoMTYwdi02NHpNMTI4IDcwNGgxNjB2LTY0SDEyOHY2NHogbTU3NiA2NGg2NHYxMjhjLTEgMTgtNyAzMy0xOSA0NXMtMjcgMTgtNDUgMTlINjRjLTM1IDAtNjQtMjktNjQtNjRWMTkyYzAtMzUgMjktNjQgNjQtNjRoMTkyQzI1NiA1NyAzMTMgMCAzODQgMHMxMjggNTcgMTI4IDEyOGgxOTJjMzUgMCA2NCAyOSA2NCA2NHYzMjBoLTY0VjMyMEg2NHY1NzZoNjQwVjc2OHpNMTI4IDI1Nmg1MTJjMC0zNS0yOS02NC02NC02NGgtNjRjLTM1IDAtNjQtMjktNjQtNjRzLTI5LTY0LTY0LTY0LTY0IDI5LTY0IDY0LTI5IDY0LTY0IDY0aC02NGMtMzUgMC02NCAyOS02NCA2NHoiIC8+PC9zdmc+);
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
     </style>
 </head>
 
@@ -86,28 +107,39 @@
     <p>RSS ile takip etmek istediğiniz başlığı aşağıdaki forma yazıp "RSS AL"a basınız. Karşınıza gelen RSS kaynağını RSS okuyucunuza ekleyerek o başlığa eklenen entry'leri takip edebilirsiniz.</p>
 
     <form action="/feed/" method="get">
-        <input type="text" name="t" maxlength="250">
+        <input type="text" name="t" maxlength="250" placeholder="barış manço" required>
         <button>RSS AL</button>
     </form>
 
     <div class="rss-link">
         <a href="#" id="rssLink"></a>
+        <button class="copy-to-clipboard" data-clipboard-text title="Panoya kopyala">Panoya Kopyala</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.16/clipboard.min.js" defer></script>
     <script>
         (function () {
             var $ = function (q) {
                 return document.querySelector(q);
             };
 
+            var clipboard;
+
             $('form').addEventListener('submit', function (event) {
                 event.preventDefault();
 
                 var title = $('form input[name=t]').value;
+                var url = document.location.origin + '/feed/?t=' + encodeURI(title);
 
                 var link = $('.rss-link a');
-                link.setAttribute('href', '/feed/?t=' + encodeURI(title))
+                link.setAttribute('href', url)
                 link.innerText = title + ' EkşiSözlük RSS Kaynağı';
+
+                clipboard = new Clipboard('.copy-to-clipboard', {
+                    text: function() {
+                        return url;
+                    }
+                });
 
                 $('body').classList.add('open');
             });
