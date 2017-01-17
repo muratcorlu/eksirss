@@ -146,7 +146,7 @@ def fill_cache_for_key(key):
 
 
 def add_feed_to_task_queue(key):
-    deferred.defer(fill_cache_for_key, key, _queue="feed-queue")
+    deferred.defer(fill_cache_for_key, key, _queue="feed-queue", _name=key)
 
 
 @app.route('/')
