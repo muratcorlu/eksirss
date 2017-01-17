@@ -4,3 +4,4 @@ requests_toolbelt==0.7.0
 lxml==3.7.1
 Flask-Caching==1.1.1
 user-agent==0.1.5
+furl==0.5.6

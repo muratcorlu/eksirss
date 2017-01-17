@@ -12,14 +12,15 @@ from google.appengine.ext import ndb
 
 from flask import Flask, render_template, request, redirect
 from flask_caching import Cache
+from furl import furl
 from lxml import html, etree
 from user_agent import generate_user_agent
 from werkzeug.http import http_date
 
 import requests_toolbelt.adapters.appengine
+requests_toolbelt.adapters.appengine.monkeypatch()
 
 HTTP_REQUEST_TIMEOUT = 10
-requests_toolbelt.adapters.appengine.monkeypatch()
 
 # 12 hours
 CACHE_TIMEOUT = 12 * 60 * 60
@@ -93,7 +94,9 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
             current_page_number = tree.xpath('//*[@class="pager"]/@data-currentpage')[0]
 
             if last_page_number > current_page_number:
-                page = s.get(page.url, params={'p': last_page_number})
+                paging_replaced_url = furl(url).set({'p': last_page_number}).url
+
+                page = s.get(paging_replaced_url)
                 tree = html.fromstring(page.content)
                 url = page.url
 
