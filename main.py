@@ -94,7 +94,7 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
             current_page_number = tree.xpath('//*[@class="pager"]/@data-currentpage')[0]
 
             if int(last_page_number) > int(current_page_number):
-                paging_replaced_url = furl(url).set({'p': last_page_number}).url
+                paging_replaced_url = furl(url).remove('p').add({'p': last_page_number}).url
 
                 page = s.get(paging_replaced_url)
                 tree = html.fromstring(page.content)
