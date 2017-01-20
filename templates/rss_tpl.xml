@@ -14,7 +14,7 @@
         <pubDate>{{ feed.content.dates[loop.index0] }}</pubDate>
         <title>{{ feed.content.authors[loop.index0] }} - {{ feed.title }}</title>
         <author>{{ feed.content.authors[loop.index0] }}</author>
-        <description><div xmlns="http://www.w3.org/1999/xhtml">{{ entry | safe }}</div></description>
+        <description><![CDATA[{{ entry | safe }}]]></description>
         <link>https://www.eksisozluk.com{{ feed.content.links[loop.index0] }}</link>
     </item>
     {% endfor %}
