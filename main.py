@@ -126,6 +126,15 @@ def create_feed_from_page(tree, keyword, url, last_hit=None):
     }
     topic_feed.last_update = datetime.now()
     topic_feed.last_hit = last_hit if last_hit else datetime.now()
+
+    # if there are no entries, some entries might be deleted and we are requesting wrong page
+    # Here we are overriding url so on the next job run, it will work
+    if not entries:
+        load_more_link = tree.xpath('//*[@id="topic"]/a/@href')
+        if load_more_link:
+            load_more_link = load_more_link[0].lstrip('/')
+            topic_feed.url = 'https://eksisozluk.com/{0}'.format(load_more_link)
+
     return topic_feed
 
 
