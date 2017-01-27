@@ -1,8 +1,8 @@
 cron:
-- description: fill cache
-  url: /tasks/fill-cache
-  schedule: 1 of jan 00:00
+- description: fill task queue
+  url: /tasks/fix-missing
+  schedule: every day 00:00
 
 - description: delete topics not accessed in 24 hours
   url: /tasks/clear-db
-  schedule: every 24 hours
+  schedule: every day 01:00

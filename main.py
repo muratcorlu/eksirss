@@ -163,9 +163,11 @@ def main():
     return render_template('main.html')
 
 
-@app.route('/tasks/fill-cache')
-def fill_cache():
-    for key in Feed.query().order(Feed.last_update).iter(keys_only=True):
+@app.route('/tasks/fix-missing')
+def fix_missing_tasks():
+    # some tasks were not placed in queue in 24 hours
+    one_day_ago = datetime.now() - timedelta(days=1)
+    for key in Feed.query(Feed.last_update < one_day_ago).iter(keys_only=True):
         add_feed_to_task_queue(key)
 
     return "ok"
