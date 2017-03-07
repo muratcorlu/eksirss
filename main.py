@@ -41,7 +41,6 @@ class Feed(ndb.Model):
     keyword = ndb.StringProperty()
     content = ndb.JsonProperty()
     last_update = ndb.DateTimeProperty()
-    last_hit = ndb.DateTimeProperty()
 
     def __repr__(self):
         return '<Topic %r updated at %r>' % (self.keyword, self.last_update)
@@ -73,7 +72,7 @@ def render_feed(feed):
     }
 
 
-def fetch_feed(keyword, url_with_paging=None, last_hit=None):
+def fetch_feed(keyword, url_with_paging=None):
     with requests.Session() as s:
         s.headers.update({
             'User-Agent': generate_user_agent()
@@ -100,13 +99,13 @@ def fetch_feed(keyword, url_with_paging=None, last_hit=None):
                 tree = html.fromstring(page.content)
                 url = page.url
 
-    feed = create_feed_from_page(tree, keyword, url, last_hit=last_hit)
+    feed = create_feed_from_page(tree, keyword, url)
     feed.put()
 
     return feed
 
 
-def create_feed_from_page(tree, keyword, url, last_hit=None):
+def create_feed_from_page(tree, keyword, url):
     topic_feed = Feed()
     topic_feed.key = feed_key(keyword)
     topic_feed.title = tree.xpath('//*[@id="title"]/a/span/text()')[0]
@@ -125,7 +124,6 @@ def create_feed_from_page(tree, keyword, url, last_hit=None):
         'dates': [d.strftime("%a, %d %b %Y %H:%M:%S") for d in dates]
     }
     topic_feed.last_update = datetime.now()
-    topic_feed.last_hit = last_hit if last_hit else datetime.now()
 
     # if there are no entries, some entries might be deleted and we are requesting wrong page
     # Here we are overriding url so on the next job run, it will work
@@ -144,7 +142,7 @@ def fill_cache_for_key(key):
         return
 
     with app.app_context():
-        feed = fetch_feed(feed.keyword, url_with_paging=feed.url, last_hit=feed.last_hit)
+        feed = fetch_feed(feed.keyword, url_with_paging=feed.url)
         response = render_feed(feed)
 
         logging.info('filling cache for %s', feed.keyword)
@@ -156,6 +154,22 @@ def fill_cache_for_key(key):
 
 def add_feed_to_task_queue(key):
     deferred.defer(fill_cache_for_key, key, _queue="feed-queue")
+
+
+def last_hit_key(keyword):
+    safe_key = feed_key(keyword).urlsafe()
+    key = u'feed/%s/last_hit' % safe_key
+    return key
+
+
+def update_last_hit(keyword):
+    key = last_hit_key(keyword)
+    cache.set(key, datetime.now(), timeout=25 * 60 * 60)
+
+
+def find_last_hit(keyword):
+    key = last_hit_key(keyword)
+    return cache.get(key)
 
 
 @app.route('/')
@@ -176,13 +190,14 @@ def fix_missing_tasks():
 @app.route('/tasks/clear-db')
 def clear_db():
     one_day_ago = datetime.now() - timedelta(days=1)
-
-    # keys_to_delete = [key for key in old_topics.iter(keys_only=True)]
     keys_to_delete = []
-    for feed in Feed.query(Feed.last_hit < one_day_ago):
-        logging.info('deleting %s from db', feed.keyword)
-        keys_to_delete.append(feed.key)
-    else:
+    for key in Feed.query().iter(keys_only=True):
+        last_hit = find_last_hit(key.id())
+        if not last_hit or last_hit < one_day_ago:
+            logging.info('deleting %s from db', key.id())
+            keys_to_delete.append(key)
+
+    if not keys_to_delete:
         logging.warn('nothing to delete')
 
     ndb.delete_multi(keys_to_delete)
@@ -221,11 +236,7 @@ def redirect_nonwww():
 @app.after_request
 def after_request(response):
     if get_feed.__name__ == request.endpoint:
-        feed = feed_key(request.args.get('t')).get()
-        if feed:
-            # update last hit
-            feed.last_hit = datetime.now()
-            feed.put()
+        update_last_hit(request.args.get('t'))
 
     return response
 
