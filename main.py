@@ -112,7 +112,7 @@ def create_feed_from_page(tree, keyword, url):
     topic_feed.url = url
     topic_feed.keyword = keyword
 
-    entries = [etree.tostring(entry) for entry in tree.xpath('//*[@id="entry-list"]/li/div[1]')][::-1]
+    entries = [etree.tostring(entry) for entry in tree.xpath('//*[@id="entry-item-list"]/li/div[1]')][::-1]
     links = tree.xpath('//*[@class="entry-date permalink"]/@href')[::-1]
     authors = tree.xpath('//*[@class="entry-author"]/text()')[::-1]
     dates = [datetime.strptime(date.split(' ~ ')[0], "%d.%m.%Y %H:%M") for date in
