@@ -137,7 +137,7 @@ def create_feed_from_page(tree, keyword, url):
 
 
 def fix_links(tree):
-    for node in tree.xpath('//a[@href]'):
+    for node in tree.xpath('a[@href]'):
         href = node.get('href')
         if href.startswith('http://') or href.startswith('https://'):
             continue
