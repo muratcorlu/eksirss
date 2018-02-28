@@ -4,7 +4,7 @@ import requests
 
 from datetime import datetime
 from datetime import timedelta
-from urlparse import urlparse, urlunparse
+from urlparse import urlparse, urlunparse, urljoin
 
 from google.appengine.api import urlfetch
 from google.appengine.ext.deferred import deferred
@@ -112,7 +112,7 @@ def create_feed_from_page(tree, keyword, url):
     topic_feed.url = url
     topic_feed.keyword = keyword
 
-    entries = [etree.tostring(entry) for entry in tree.xpath('//*[@id="entry-item-list"]/li/div[1]')][::-1]
+    entries = [etree.tostring(fix_links(entry)) for entry in tree.xpath('//*[@id="entry-item-list"]/li/div[1]')][::-1]
     links = tree.xpath('//*[@class="entry-date permalink"]/@href')[::-1]
     authors = tree.xpath('//*[@class="entry-author"]/text()')[::-1]
     dates = [datetime.strptime(date.split(' ~ ')[0], "%d.%m.%Y %H:%M") for date in
@@ -134,6 +134,18 @@ def create_feed_from_page(tree, keyword, url):
             topic_feed.url = 'https://eksisozluk.com/{0}'.format(load_more_link)
 
     return topic_feed
+
+
+def fix_links(tree):
+    for node in tree.xpath('//a[@href]'):
+        href = node.get('href')
+        if href.startswith('http://') or href.startswith('https://'):
+            continue
+
+        url = urljoin('https://eksisozluk.com', href)
+        node.set('href', url)
+
+    return tree
 
 
 def fill_cache_for_key(key):
