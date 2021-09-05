@@ -17,7 +17,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - id: Deploy
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Deploy
         uses: google-github-actions/deploy-appengine@main
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}    
