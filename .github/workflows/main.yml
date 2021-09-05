@@ -17,12 +17,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/setup-gcloud@master
-        with:
-          version: '290.0.1'
-          service_account_key: ${{ secrets.GAE_SERVICE_KEY }}
-          export_default_credentials: true
       - id: Deploy
         uses: google-github-actions/deploy-appengine@main
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}    
+          credentials: ${{ secrets.GAE_SERVICE_KEY }}
