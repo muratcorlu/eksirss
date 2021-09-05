@@ -17,9 +17,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Deploy to App Engine
-        uses: google-github-actions/deploy-appengine@v0.4.0
+      - uses: google-github-actions/setup-gcloud@master
         with:
-          credentials: ${{ secrets.GAE_SERVICE_KEY }}
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GAE_SERVICE_KEY }}
+          export_default_credentials: true
+      - id: Deploy
+        uses: google-github-actions/deploy-appengine@main
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}    
