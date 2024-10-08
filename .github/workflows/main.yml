@@ -19,8 +19,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Deploy
-        uses: google-github-actions/deploy-appengine@main
+        
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}    
-          credentials: ${{ secrets.GAE_SERVICE_KEY }}
+          credentials_json: ${{ secrets.GAE_SERVICE_KEY }}
+  
+      - name: Set Google Cloud Project
+        run: gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Deploy to App Engine
+        run: gcloud app deploy --quiet        
