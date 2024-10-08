@@ -79,9 +79,9 @@ def fetch_feed(keyword, url_with_paging=None):
         })
 
         if url_with_paging:
-            page = s.get(url_with_paging)
+            page = s.get(url_with_paging, allow_redirects=True)
         else:
-            page = s.get('https://eksisozluk.com/', params={'q': keyword})
+            page = s.get('https://eksisozluk.com/', allow_redirects=True, params={'q': keyword})
 
         tree = html.fromstring(page.content)
         url = page.url
