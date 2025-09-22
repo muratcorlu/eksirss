@@ -4,7 +4,7 @@ import requests
 
 from datetime import datetime
 from datetime import timedelta
-from urlparse import urlparse, urlunparse, urljoin
+from urllib.parse import urlparse, urlunparse, urljoin
 
 from google.appengine.api import urlfetch
 from google.appengine.ext.deferred import deferred
@@ -17,8 +17,13 @@ from lxml import html, etree
 from user_agent import generate_user_agent
 from werkzeug.http import http_date
 
-import requests_toolbelt.adapters.appengine
-requests_toolbelt.adapters.appengine.monkeypatch()
+try:
+    import requests_toolbelt.adapters.appengine
+    requests_toolbelt.adapters.appengine.monkeypatch()
+except ImportError:
+    # requests_toolbelt.adapters.appengine not available in newer versions
+    # This is only needed for Google App Engine, so we can skip it in other environments
+    pass
 
 HTTP_REQUEST_TIMEOUT = 10
 
@@ -29,7 +34,7 @@ CACHE_TIMEOUT = 12 * 60 * 60
 CDN_CACHE_TIMEOUT = 60 * 60
 
 app = Flask(__name__)
-app.config['CACHE_TYPE'] = 'gaememcached'
+app.config['CACHE_TYPE'] = 'simple'
 app.config['CACHE_KEY_PREFIX'] = ''
 
 cache = Cache(app)
@@ -56,7 +61,7 @@ def cache_key(keyword=None):
 
     safe_key = feed_key(keyword).urlsafe()
 
-    key = u'feed/%s' % safe_key
+    key = 'feed/%s' % safe_key
     logging.info('cache_key %s', key)
 
     return key
@@ -108,20 +113,39 @@ def fetch_feed(keyword, url_with_paging=None):
 def create_feed_from_page(tree, keyword, url):
     topic_feed = Feed()
     topic_feed.key = feed_key(keyword)
-    topic_feed.title = tree.xpath('//*[@id="title"]/a/span/text()')[0]
+    title_nodes = tree.xpath('//*[@id="title"]/a/span/text()')
+    topic_feed.title = title_nodes[0] if title_nodes else keyword
     topic_feed.url = url
     topic_feed.keyword = keyword
 
-    entries = [etree.tostring(fix_links(entry)) for entry in tree.xpath('//*[@id="entry-item-list"]/li/div[1]')][::-1]
+    raw_entries = tree.xpath('//*[@id="entry-item-list"]/li/div[1]')
+    entries = [etree.tostring(fix_links(entry), encoding='unicode') for entry in raw_entries][::-1]
     links = tree.xpath('//*[@class="entry-date permalink"]/@href')[::-1]
     authors = tree.xpath('//*[@class="entry-author"]/text()')[::-1]
-    dates = [datetime.strptime(date.split(' ~ ')[0], "%d.%m.%Y %H:%M") for date in
-             tree.xpath('//*[@class="entry-date permalink"]/text()')][::-1]
+
+    date_texts = tree.xpath('//*[@class="entry-date permalink"]/text()')[::-1]
+    parsed_dates = []
+    for date_text in date_texts:
+        try:
+            parsed_dates.append(datetime.strptime(date_text.split(' ~ ')[0], "%d.%m.%Y %H:%M"))
+        except Exception:
+            parsed_dates.append(datetime.now())
+
+    lengths = [len(entries), len(links), len(authors), len(parsed_dates)]
+    min_len = min(lengths) if lengths else 0
+    entries = entries[:min_len]
+    links = links[:min_len]
+    authors = authors[:min_len]
+    dates = [d.strftime("%a, %d %b %Y %H:%M:%S") for d in parsed_dates[:min_len]]
+
+    if min_len == 0:
+        dates = [(datetime.now()).strftime("%a, %d %b %Y %H:%M:%S")]
+
     topic_feed.content = {
         'entries': entries,
         'links': links,
         'authors': authors,
-        'dates': [d.strftime("%a, %d %b %Y %H:%M:%S") for d in dates]
+        'dates': dates
     }
     topic_feed.last_update = datetime.now()
 
@@ -170,7 +194,7 @@ def add_feed_to_task_queue(key):
 
 def last_hit_key(keyword):
     safe_key = feed_key(keyword).urlsafe()
-    key = u'feed/%s/last_hit' % safe_key
+    key = 'feed/%s/last_hit' % safe_key
     return key
 
 
@@ -210,7 +234,7 @@ def clear_db():
             keys_to_delete.append(key)
 
     if not keys_to_delete:
-        logging.warn('nothing to delete')
+        logging.warning('nothing to delete')
 
     ndb.delete_multi(keys_to_delete)
     return str(len(keys_to_delete))

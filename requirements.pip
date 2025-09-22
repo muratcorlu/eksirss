@@ -1,7 +1,7 @@
-flask==0.12
-requests==2.12.4
-requests_toolbelt==0.7.0
-lxml==3.7.1
-Flask-Caching==1.1.1
-user-agent==0.1.5
-furl==0.5.6
+flask==2.3.3
+requests==2.31.0
+requests_toolbelt==1.0.0
+lxml==4.9.3
+Flask-Caching==2.1.0
+user-agent==0.1.10
+furl==2.1.3

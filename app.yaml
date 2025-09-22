@@ -1,4 +1,4 @@
-runtime: python27
+runtime: python312
 threadsafe: true
 
 handlers:
@@ -28,6 +28,9 @@ libraries:
   version: latest
 
 - name: ssl
+  version: latest
+
+- name: requests
   version: latest
 
 skip_files:
