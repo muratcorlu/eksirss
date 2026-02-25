@@ -1,6 +1,8 @@
 import logging
+import threading
 import time
 from datetime import datetime, timedelta
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from main import (
     app,
@@ -80,8 +82,41 @@ def cleanup_inactive_feeds():
     logger.info("Deleted %d inactive feeds", deleted)
 
 
+HEALTH_PORT = 8081
+
+
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/health":
+            try:
+                redis_client.ping()
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"status": "ok"}')
+            except Exception:
+                self.send_response(503)
+                self.end_headers()
+                self.wfile.write(b'{"status": "error"}')
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def log_message(self, format, *args):
+        pass
+
+
+def start_health_server():
+    server = HTTPServer(("0.0.0.0", HEALTH_PORT), HealthHandler)
+    server.serve_forever()
+
+
 def run():
     logger.info("Worker started")
+
+    health_thread = threading.Thread(target=start_health_server, daemon=True)
+    health_thread.start()
+    logger.info("Health server started on port %d", HEALTH_PORT)
+
     last_cleanup = time.time()
     last_stale_check = time.time()
 

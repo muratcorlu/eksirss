@@ -206,6 +206,12 @@ def find_last_hit(keyword):
     return None
 
 
+@app.route("/health")
+def health():
+    redis_client.ping()
+    return {"status": "ok"}
+
+
 @app.route("/")
 def index():
     return render_template("main.html")
