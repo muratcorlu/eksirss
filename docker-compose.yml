@@ -1,0 +1,33 @@
+services:
+  app:
+    image: ghcr.io/muratcorlu/eksirss:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CACHE_DROP_TOKEN=${CACHE_DROP_TOKEN}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker:
+    image: ghcr.io/muratcorlu/eksirss:latest
+    command: ["python", "worker.py"]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_data:

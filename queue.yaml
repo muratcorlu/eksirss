@@ -1,4 +1,0 @@
-queue:
-- name: feed-queue
-  rate: 6/m
-  max_concurrent_requests: 1

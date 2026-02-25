@@ -1,8 +1,0 @@
-cron:
-- description: fill task queue
-  url: /tasks/fix-missing
-  schedule: every day 06:00
-
-- description: delete topics not accessed in 24 hours
-  url: /tasks/clear-db
-  schedule: every day 01:00
