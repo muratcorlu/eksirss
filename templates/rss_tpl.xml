@@ -4,7 +4,7 @@
     <title>{{ feed.title }} - EkşiSözlük</title>
     <link>{{ origin }}/feed/?t={{ feed.keyword | urlencode }}</link>
     <description>EkşiSözlük'te {{ feed.title }} hakkında yazılanlar RSS kaynağı</description>
-    <lastBuildDate>{{ feed.content.dates[0] }}</lastBuildDate>
+    {% if feed.content.dates %}<lastBuildDate>{{ feed.content.dates[0] }}</lastBuildDate>{% endif %}
     <language>tr</language>
     <ttl>15</ttl>
 

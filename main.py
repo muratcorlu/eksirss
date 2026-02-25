@@ -141,14 +141,18 @@ def fetch_feed(keyword, url_with_paging=None):
                 url = page.url
 
     feed = create_feed_from_page(tree, keyword, url)
-    feed.save()
+    if feed:
+        feed.save()
 
     return feed
 
 
 def create_feed_from_page(tree, keyword, url):
     topic_feed = Feed(keyword=keyword)
-    topic_feed.title = tree.xpath('//*[@id="title"]/a/span/text()')[0]
+    title = tree.xpath('//*[@id="title"]/a/span/text()')
+    if not title:
+        return None
+    topic_feed.title = title[0]
     topic_feed.url = url
 
     entries = [
@@ -226,7 +230,11 @@ def get_feed():
     feed = Feed.get(keyword)
     if not feed:
         feed = fetch_feed(keyword)
-        enqueue_feed_update(keyword)
+        if feed:
+            enqueue_feed_update(keyword)
+
+    if not feed:
+        feed = Feed(keyword=keyword, title=keyword)
 
     return render_feed(feed)
 
